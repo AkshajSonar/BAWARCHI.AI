@@ -1,0 +1,4 @@
+date,day_of_week,meal_type,dish_name,dish_type,is_special,is_exam_day,is_holiday,is_break,is_event_day,total_students,prepared_kg,leftover_kg
+2024-01-01,0,lunch,Rice,veg,0,0,0,0,0,1300,200,30
+2024-01-02,1,lunch,Rice,veg,0,1,0,0,0,1300,180,50
+2024-01-03,2,dinner,Chicken Curry,nonveg,1,0,0,0,1,1300,150,20
