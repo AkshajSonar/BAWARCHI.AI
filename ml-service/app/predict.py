@@ -1,39 +1,63 @@
 import os
 import pandas as pd
 import xgboost as xgb
+
 from app.features import preprocess
-from app.train import train_model
+from app.train import TRAINING_DATA, train_model_from_payload
+from app.confidence import compute_confidence
 
 MODEL_PATH = "models/xgb_model.json"
 
 
-def load_or_train_model():
-    # If model does not exist OR is empty → train
-    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) == 0:
-        print("⚠️ Model not found or empty. Training new model...")
-        return train_model()
-
+def load_model_or_fallback():
+    """
+    Loads model if exists.
+    If not, trains a small fallback model from TRAINING_DATA.
+    """
     model = xgb.XGBRegressor()
-    model.load_model(MODEL_PATH)
+
+    if os.path.exists(MODEL_PATH):
+        model.load_model(MODEL_PATH)
+        return model
+
+    # ❄️ Cold start handling
+    if TRAINING_DATA is None or len(TRAINING_DATA) < 3:
+        raise RuntimeError("Model not trained yet. Not enough data.")
+
+    # Train fallback model
+    X = preprocess(TRAINING_DATA)
+    y = TRAINING_DATA["consumed_kg"]
+
+    model.fit(X, y)
+
+    os.makedirs("models", exist_ok=True)
+    model.save_model(MODEL_PATH)
+
     return model
 
 
 def predict(input_data: dict):
-    df = pd.DataFrame([input_data])
-    X = preprocess(df)
+    df_input = pd.DataFrame([input_data])
+    X = preprocess(df_input)
 
-    model = load_or_train_model()
+    model = load_model_or_fallback()
     pred = float(model.predict(X)[0])
 
-    # ---- Confidence logic (simple & valid) ----
-    confidence = "medium"
-    if pred > 0:
-        confidence = "high"
+    confidence = "low"
+    buffer_pct = 0.12
 
-    buffer = 0.05 * pred if confidence == "high" else 0.1 * pred
+    if TRAINING_DATA is not None:
+        similar = TRAINING_DATA[
+            (TRAINING_DATA["dish_name"] == input_data["dish_name"]) &
+            (TRAINING_DATA["meal_type"] == input_data["meal_type"])
+        ]
+
+        confidence, buffer_pct = compute_confidence(similar, pred)
+
+    recommended = pred + (buffer_pct * pred)
 
     return {
         "expected_consumption_kg": round(pred, 2),
-        "recommended_kg": round(pred + buffer, 2),
+        "recommended_kg": round(recommended, 2),
         "confidence": confidence
     }

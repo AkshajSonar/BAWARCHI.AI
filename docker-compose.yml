@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: plateai
+      POSTGRES_PASSWORD: plateai
+      POSTGRES_DB: plateai
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plateai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  ml-service:
+    build: ./ml-service
+    ports:
+      - "8000:8000"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://plateai:plateai@postgres:5432/plateai?sslmode=disable
+      ML_SERVICE_URL: http://ml-service:8000
