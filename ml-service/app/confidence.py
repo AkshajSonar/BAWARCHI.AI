@@ -1,26 +1,17 @@
-import numpy as np
-import pandas as pd
+def compute_confidence(df):
+    n = len(df)
 
+    if n < 5:
+        return "low", 0.18
 
-def compute_confidence(df: pd.DataFrame, prediction: float):
-    """
-    df = historical rows similar to current input
-    """
-
-    sample_count = len(df)
-
-    if sample_count < 5:
-        return "low", 0.10  # bigger buffer
-
-    std_dev = df["consumed_kg"].std()
     mean = df["consumed_kg"].mean()
+    std = df["consumed_kg"].std()
 
-    # Coefficient of variation
-    cv = std_dev / mean if mean > 0 else 1.0
+    cv = std / mean if mean > 0 else 1.0
 
-    if sample_count >= 15 and cv < 0.15:
+    if n >= 20 and cv < 0.15:
         return "high", 0.05
-    elif sample_count >= 5 and cv < 0.30:
-        return "medium", 0.08
+    elif n >= 8 and cv < 0.30:
+        return "medium", 0.10
     else:
-        return "low", 0.12
+        return "low", 0.18
