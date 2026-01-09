@@ -5,6 +5,7 @@ import (
 	"plateai/internal/modules/impact"
 	"plateai/internal/modules/kitchen"
 	"plateai/internal/modules/ngo"
+	"plateai/internal/modules/surplus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +16,7 @@ func RegisterRoutes(
 	forecastHandler *forecast.Handler,
 	impactHandler *impact.Handler,
 	ngoHandler *ngo.Handler,
+	surplusHandler *surplus.Handler,
 ) {
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
@@ -31,7 +33,13 @@ func RegisterRoutes(
 	r.POST("/forecast/retrain", forecastHandler.RetrainModel)
 	r.GET("/forecast/status", forecastHandler.GetTrainingStatus)
 
-	// NGO
-	r.GET("/ngo/surplus", ngoHandler.GetAvailableSurplus)
-	r.POST("/ngo/surplus/:id/accept", ngoHandler.AcceptSurplus)
+	// NGO routes
+	ngo := r.Group("/ngos")
+	{
+		ngo.GET("/surplus/available", ngoHandler.GetAvailableSurplus)
+		ngo.POST("/surplus/:id/accept", ngoHandler.AcceptSurplus)
+	}
+
+	// Surplus events route (for kitchen/admin view)
+	r.GET("/surplus/events", surplusHandler.GetAllEvents)
 }

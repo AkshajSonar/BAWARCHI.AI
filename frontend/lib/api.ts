@@ -27,3 +27,5 @@ export async function getImpactSummary() {
     console.log("Impact summary fetched:", res)
   return res.json()
 }
+
+

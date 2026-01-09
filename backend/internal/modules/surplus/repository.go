@@ -91,4 +91,39 @@ func (r *Repository) MarkAccepted(
 	return nil
 }
 
+func (r *Repository) GetAll(ctx context.Context) ([]SurplusEvent, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT id, kitchen_entry_id, meal_type, dish_name, dish_type,
+		       quantity_kg, expires_at, status, accepted_by_ngo_id, created_at
+		FROM surplus_events
+		ORDER BY created_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []SurplusEvent
+	for rows.Next() {
+		var e SurplusEvent
+		err := rows.Scan(
+			&e.ID,
+			&e.KitchenEntryID,
+			&e.MealType,
+			&e.DishName,
+			&e.DishType,
+			&e.QuantityKg,
+			&e.ExpiresAt,
+			&e.Status,
+			&e.AcceptedByNgoID,
+			&e.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, e)
+	}
+	return result, nil
+}
+
 

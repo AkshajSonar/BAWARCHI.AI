@@ -5,13 +5,18 @@ import {
   LayoutDashboard,
   Brain,
   ClipboardList,
-  BarChart3
+  BarChart3,
+  Package,
+  Users,
+  Home,
 } from "lucide-react"
 
 const navItems = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Forecast", href: "/forecast", icon: Brain },
   { name: "Entry", href: "/entry", icon: ClipboardList },
+  { name: "Surplus", href: "/surplus", icon: Package },
+  { name: "NGOs", href: "/ngos", icon: Users },
   { name: "Impact", href: "/impact", icon: BarChart3 },
 ]
 

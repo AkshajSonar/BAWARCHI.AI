@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	SurplusThresholdKg = 10            // minimum leftover
+	SurplusThresholdKg = 15            // minimum leftover (15 kg)
 	PickupWindowHours = 2              // food safety window
 )
 
@@ -51,6 +51,10 @@ func (s *Service) Accept(
 	ngoID int64,
 ) error {
 	return s.repo.MarkAccepted(ctx, surplusID, ngoID)
+}
+
+func (s *Service) GetAllEvents(ctx context.Context) ([]SurplusEvent, error) {
+	return s.repo.GetAll(ctx)
 }
 
 

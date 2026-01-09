@@ -56,6 +56,7 @@ func main() {
 	impactHandler := impact.NewHandler(impactService)
 
 	ngoHandler := ngo.NewHandler(surplusService)
+	surplusHandler := surplus.NewHandler(surplusService)
 
 	routes.RegisterRoutes(
 		r,
@@ -63,6 +64,7 @@ func main() {
 		forecastHandler,
 		impactHandler,
 		ngoHandler,
+		surplusHandler,
 	)
 
 	r.Run(":8080")

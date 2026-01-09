@@ -23,7 +23,7 @@ const [form, setForm] = useState({
   meal_type: "lunch",
   dish_name: "",
   dish_type: "veg",
-  attendance: 1200,
+  total_students: 1200,
   prepared_qty: "",
   leftover_qty: "",
 
@@ -135,16 +135,16 @@ const [form, setForm] = useState({
             </Select>
           </div>
 
-          {/* Attendance */}
+          {/* Total Students */}
           <div>
             <Label>Total Students</Label>
             <Input
               type="number"
-              value={form.attendance}
+              value={form.total_students}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  attendance: Number(e.target.value),
+                  total_students: Number(e.target.value),
                 })
               }
             />
