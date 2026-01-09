@@ -28,6 +28,12 @@ func RunMigrations(db *pgxpool.Pool) {
 		prepared_qty FLOAT NOT NULL,
 		leftover_qty FLOAT DEFAULT 0
 	);
+	CREATE TABLE IF NOT EXISTS model_training_log (
+  id SERIAL PRIMARY KEY,
+  last_trained_at TIMESTAMP NOT NULL,
+  rows_used INT NOT NULL,
+  trigger_reason TEXT
+);
 	`
 
 	_, err := db.Exec(context.Background(), query)

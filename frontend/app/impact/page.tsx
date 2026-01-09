@@ -21,6 +21,7 @@ import { useEffect, useState } from "react"
 import { getImpactSummary } from "@/lib/api"
 import { AnimatedKpi } from "@/components/impact/AnimatedKpi"
 import { WasteTrendChart } from "@/components/impact/WasteTrendChart"
+import { ModelRetrainCard } from "@/components/impact/ModelRetrainCard"
 
 // ---------- SAMPLE DATA (Replace later with real backend) ----------
 
@@ -53,6 +54,23 @@ export default function ImpactPage() {
  const [data, setData] = useState<any | null>(null)
 const [loading, setLoading] = useState(true)
 const [error, setError] = useState<string | null>(null)
+const [trainStatus, setTrainStatus] = useState(null)
+const [retraining, setRetraining] = useState(false)
+
+useEffect(() => {
+  fetch("http://localhost:8080/forecast/status")
+    .then((res) => res.json())
+    .then(setTrainStatus)
+}, [])
+
+async function handleRetrain() {
+  setRetraining(true)
+  await fetch("http://localhost:8080/forecast/retrain", {
+    method: "POST",
+  })
+  window.location.reload()
+}
+
 
 useEffect(() => {
   getImpactSummary()
@@ -177,6 +195,15 @@ console.log("Impact data:", data);
           </BarChart>
         </ChartWrapper>
       </ImpactCard>
+      
+      {trainStatus && (
+  <ModelRetrainCard
+    status={trainStatus}
+    onRetrain={handleRetrain}
+    loading={retraining}
+  />
+)}
+
 
       {/* Final Statement */}
       <Card>

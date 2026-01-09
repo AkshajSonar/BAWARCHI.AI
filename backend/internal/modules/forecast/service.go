@@ -10,12 +10,18 @@ import (
 
 
 type Service struct {
-	mlURL string
+	mlURL        string
+	trainingRepo *TrainingRepo
 }
 
-func NewService(mlURL string) *Service {
-	return &Service{mlURL: mlURL}
+
+func NewService(mlURL string, trainingRepo *TrainingRepo) *Service {
+	return &Service{
+		mlURL:        mlURL,
+		trainingRepo: trainingRepo,
+	}
 }
+
 
 func (s *Service) Predict(req ForecastRequest) (*ForecastResponse, error) {
 	body, _ := json.Marshal(req)

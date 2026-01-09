@@ -16,3 +16,7 @@ func (s *Service) AddEntry(ctx context.Context, e *KitchenEntry) error {
 func (s *Service) GetTrainingData(ctx context.Context) ([]map[string]interface{}, error) {
 	return s.repo.GetTrainingData(ctx)
 }
+
+func (s *Service) CountEntries(ctx context.Context) (int, error) {
+	return s.repo.CountEntries(ctx)
+}

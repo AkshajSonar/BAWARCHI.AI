@@ -24,4 +24,5 @@ func RegisterRoutes(
 	// Forecast routes
 	r.POST("/forecast/dish", forecastHandler.GetDishForecast)
 	r.POST("/forecast/retrain", forecastHandler.RetrainModel) // ✅ THIS WAS MISSING
+	r.GET("/forecast/status", forecastHandler.GetTrainingStatus)
 }

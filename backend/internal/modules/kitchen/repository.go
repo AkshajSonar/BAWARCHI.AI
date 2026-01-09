@@ -123,3 +123,12 @@ func (r *Repository) GetTrainingData(ctx context.Context) ([]map[string]interfac
 }
 
 
+func (r *Repository) CountEntries(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM kitchen_entries`,
+	).Scan(&count)
+
+	return count, err
+}

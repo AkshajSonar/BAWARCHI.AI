@@ -26,6 +26,8 @@ func main() {
 	}))
 
 	dbPool := db.NewPostgresPool(cfg.DatabaseURL)
+	trainingRepo := forecast.NewTrainingRepo(dbPool)
+
 	db.RunMigrations(dbPool)
 
 	// Kitchen
@@ -34,7 +36,11 @@ func main() {
 	kitchenHandler := kitchen.NewHandler(kitchenService)
 
 	// Forecast (ML)
-	forecastService := forecast.NewService(cfg.MLServiceURL)
+	forecastService := forecast.NewService(
+	cfg.MLServiceURL,
+	trainingRepo,
+)
+
 	forecastHandler := forecast.NewHandler(forecastService, kitchenService)
 
 	// Impact
