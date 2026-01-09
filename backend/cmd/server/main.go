@@ -1,13 +1,18 @@
 package main
 
 import (
+	"time"
+
 	"plateai/internal/config"
 	"plateai/internal/db"
-	"plateai/internal/modules/forecast"
-	"plateai/internal/modules/kitchen"
-	"plateai/internal/modules/impact"
 	"plateai/internal/routes"
-	"time"
+
+	"plateai/internal/modules/forecast"
+	"plateai/internal/modules/impact"
+	"plateai/internal/modules/kitchen"
+	"plateai/internal/modules/surplus"
+	"plateai/internal/modules/donation"
+	"plateai/internal/modules/ngo"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,30 +31,39 @@ func main() {
 	}))
 
 	dbPool := db.NewPostgresPool(cfg.DatabaseURL)
-	trainingRepo := forecast.NewTrainingRepo(dbPool)
-
 	db.RunMigrations(dbPool)
 
-	// Kitchen
+	// Repos
+	trainingRepo := forecast.NewTrainingRepo(dbPool)
+	surplusRepo := surplus.NewRepository(dbPool)
+	donationRepo := donation.NewRepository(dbPool)
 	kitchenRepo := kitchen.NewRepository(dbPool)
-	kitchenService := kitchen.NewService(kitchenRepo)
-	kitchenHandler := kitchen.NewHandler(kitchenService)
-
-	// Forecast (ML)
-	forecastService := forecast.NewService(
-	cfg.MLServiceURL,
-	trainingRepo,
-)
-
-	forecastHandler := forecast.NewHandler(forecastService, kitchenService)
-
-	// Impact
 	impactRepo := impact.NewRepository(dbPool)
+
+	// Services
+	surplusService := surplus.NewService(surplusRepo)
+	kitchenService := kitchen.NewService(
+		kitchenRepo,
+		surplusService,
+		donationRepo,
+	)
+	forecastService := forecast.NewService(cfg.MLServiceURL, trainingRepo)
 	impactService := impact.NewService(impactRepo)
+
+	// Handlers
+	kitchenHandler := kitchen.NewHandler(kitchenService)
+	forecastHandler := forecast.NewHandler(forecastService, kitchenService)
 	impactHandler := impact.NewHandler(impactService)
 
-	// r := gin.Default()
-	routes.RegisterRoutes(r, kitchenHandler, forecastHandler, impactHandler)
+	ngoHandler := ngo.NewHandler(surplusService)
+
+	routes.RegisterRoutes(
+		r,
+		kitchenHandler,
+		forecastHandler,
+		impactHandler,
+		ngoHandler,
+	)
 
 	r.Run(":8080")
 }

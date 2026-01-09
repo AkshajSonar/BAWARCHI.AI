@@ -15,17 +15,19 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) Create(ctx context.Context, e *KitchenEntry) error {
-	query := `
-INSERT INTO kitchen_entries
-(date, meal_type, dish_name, dish_type,
- is_special, is_exam_day, is_holiday, is_break, is_event_day,
- total_students, prepared_qty, leftover_qty)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-`
+func (r *Repository) Create(ctx context.Context, e *KitchenEntry) (int64, error) {
+	var id int64
 
-	_, err := r.db.Exec(ctx, query,
-		e.Date,
+	query := `
+		INSERT INTO kitchen_entries
+		(date, meal_type, dish_name, dish_type,
+		 is_special, is_exam_day, is_holiday, is_break, is_event_day,
+		 total_students, prepared_qty, leftover_qty)
+		VALUES (now(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		RETURNING id
+	`
+
+	err := r.db.QueryRow(ctx, query,
 		e.MealType,
 		e.DishName,
 		e.DishType,
@@ -37,10 +39,11 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		e.TotalStudents,
 		e.PreparedQty,
 		e.LeftoverQty,
-	)
+	).Scan(&id)
 
-	return err
+	return id, err
 }
+
 func (r *Repository) GetTrainingData(ctx context.Context) ([]map[string]interface{}, error) {
 	query := `
 		SELECT
