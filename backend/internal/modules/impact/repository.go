@@ -38,3 +38,32 @@ func (r *Repository) FetchImpactData(ctx context.Context) ([]KitchenRow, error) 
 
 	return result, nil
 }
+
+// FetchRedistributionData fetches accepted/reserved surplus events
+func (r *Repository) FetchRedistributionData(ctx context.Context) ([]RedistributionRow, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT 
+			DATE(created_at) as day,
+			quantity_kg,
+			accepted_by_ngo_id
+		FROM surplus_events
+		WHERE status = 'reserved'
+		  AND accepted_by_ngo_id IS NOT NULL
+		ORDER BY created_at
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []RedistributionRow
+	for rows.Next() {
+		var row RedistributionRow
+		err := rows.Scan(&row.Day, &row.QuantityKg, &row.NgoID)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, row)
+	}
+	return result, nil
+}

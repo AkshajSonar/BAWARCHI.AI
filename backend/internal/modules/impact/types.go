@@ -9,6 +9,12 @@ type ImpactSummary struct {
 	WasteTrend       []TrendPoint `json:"waste_trend"`
 	AccuracyTrend    []TrendPoint `json:"accuracy_trend"`
 	ConsumptionTrend []ConsumptionPoint `json:"consumption_trend"`
+
+	// Redistribution metrics
+	FoodRedistributedKg    float64 `json:"food_redistributed_kg"`
+	NgosServed             int     `json:"ngos_served"`
+	SuccessfulRedistributions int  `json:"successful_redistributions"`
+	RedistributionTrend    []RedistributionPoint `json:"redistribution_trend"`
 }
 
 type TrendPoint struct {
@@ -19,5 +25,10 @@ type TrendPoint struct {
 type ConsumptionPoint struct {
 	Dish      string  `json:"dish"`
 	Prepared  float64 `json:"prepared"`
-	Consumed  float64 `json:"consumed"`
+	Consumed float64 `json:"consumed"`
+}
+
+type RedistributionPoint struct {
+	Day         string  `json:"day"`
+	QuantityKg  float64 `json:"quantity_kg"`
 }

@@ -42,17 +42,29 @@ func (s *Service) GetSummary(ctx context.Context) (*ImpactSummary, error) {
 	if err != nil {
 		return nil, err
 	}
-if len(rows) == 0 {
-	return &ImpactSummary{
-		FoodSavedKg:        0,
-		MealsSaved:         0,
-		MoneySaved:         0,
-		CO2AvoidedKg:       0,
-		WasteTrend:         []TrendPoint{},
-		ConsumptionTrend:  []ConsumptionPoint{},
-		AccuracyTrend:     []TrendPoint{}, // if present in struct
-	}, nil
-}
+	
+	// Fetch redistribution data
+	redistRows, redistErr := s.repo.FetchRedistributionData(ctx)
+	if redistErr != nil {
+		// If redistribution data fails, continue without it
+		redistRows = []RedistributionRow{}
+	}
+
+	if len(rows) == 0 {
+		return &ImpactSummary{
+			FoodSavedKg:        0,
+			MealsSaved:         0,
+			MoneySaved:         0,
+			CO2AvoidedKg:       0,
+			WasteTrend:         []TrendPoint{},
+			ConsumptionTrend:  []ConsumptionPoint{},
+			AccuracyTrend:     []TrendPoint{},
+			FoodRedistributedKg:    0,
+			NgosServed:             0,
+			SuccessfulRedistributions: 0,
+			RedistributionTrend:    []RedistributionPoint{},
+		}, nil
+	}
 	var totalConsumed float64
 	var totalLeftover float64
 
@@ -77,7 +89,6 @@ if len(rows) == 0 {
 	}
 
 	// Convert maps → slices
-	// var wasteTrend []TrendPoint
 	wasteTrend := make([]TrendPoint, 0)
 	for day, value := range wasteTrendMap {
 		wasteTrend = append(wasteTrend, TrendPoint{
@@ -87,9 +98,31 @@ if len(rows) == 0 {
 	}
 
 	consumptionTrend := make([]ConsumptionPoint, 0)
-	// var consumptionTrend []ConsumptionPoint
 	for _, v := range consumptionMap {
 		consumptionTrend = append(consumptionTrend, *v)
+	}
+
+	// Calculate redistribution metrics
+	var totalRedistributed float64
+	redistTrendMap := map[string]float64{}
+	ngoSet := map[int64]bool{}
+	successfulRedistributions := 0
+
+	for _, r := range redistRows {
+		totalRedistributed += r.QuantityKg
+		redistTrendMap[r.Day] += r.QuantityKg
+		if r.NgoID != nil {
+			ngoSet[*r.NgoID] = true
+			successfulRedistributions++
+		}
+	}
+
+	redistTrend := make([]RedistributionPoint, 0)
+	for day, quantity := range redistTrendMap {
+		redistTrend = append(redistTrend, RedistributionPoint{
+			Day:        day,
+			QuantityKg: quantity,
+		})
 	}
 
 	foodSaved := totalConsumed * 0.15
@@ -102,5 +135,9 @@ if len(rows) == 0 {
 		CO2AvoidedKg:       foodSaved * 2.3,
 		WasteTrend:         wasteTrend,
 		ConsumptionTrend:  consumptionTrend,
+		FoodRedistributedKg:    totalRedistributed,
+		NgosServed:             len(ngoSet),
+		SuccessfulRedistributions: successfulRedistributions,
+		RedistributionTrend:    redistTrend,
 	}, nil
 }

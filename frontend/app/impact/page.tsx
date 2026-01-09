@@ -137,7 +137,7 @@ if (error || !data) {
     suffix=" kg"
   />
 </div>
-console.log("Impact data:", data);
+
     {/* <WasteTrendChart data={data.waste_trend} /> */}
 
       {/* Waste Reduction Chart */}

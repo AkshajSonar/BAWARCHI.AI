@@ -23,10 +23,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 
 export default function AdminDashboardPage() {
   const [impactData, setImpactData] = useState<any | null>(null)
-  const [trainStatus, setTrainStatus] = useState<TrainingStatus | null>(null)
+  const [trainStatus, setTrainStatus] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [retraining, setRetraining] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const round = (v?: number) => Math.round(v ?? 0)
+
 
   useEffect(() => {
     async function loadData() {
@@ -80,8 +82,6 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const canRetrain = (trainStatus?.rows_used || 0) >= 10
-
   return (
     <div className="space-y-8">
       <div>
@@ -93,22 +93,26 @@ export default function AdminDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
-          title="Food Saved"
-          value={`${impactData.food_saved_kg || 0} kg`}
-        />
-        <MetricCard
-          title="Meals Saved"
-          value={impactData.meals_saved || 0}
-        />
-        <MetricCard
-          title="Money Saved"
-          value={`₹${impactData.money_saved || 0}`}
-        />
-        <MetricCard
-          title="CO₂ Avoided"
-          value={`${impactData.co2_avoided_kg || 0} kg`}
-        />
+      <MetricCard
+  title="Food Saved"
+  value={`${round(impactData.food_saved_kg)} kg`}
+/>
+
+<MetricCard
+  title="Meals Saved"
+  value={`${round(impactData.meals_saved)}`}
+/>
+
+<MetricCard
+  title="Money Saved"
+  value={`₹${round(impactData.money_saved)}`}
+/>
+
+<MetricCard
+  title="CO₂ Avoided"
+  value={`${round(impactData.co2_avoided_kg)} kg`}
+/>
+
       </div>
 
       {/* Charts Row */}
@@ -158,7 +162,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Food Redistributed Chart */}
-      {impactData.redistribution_trend && (
+      {impactData.redistribution_trend && impactData.redistribution_trend.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Food Redistributed to NGOs</CardTitle>
@@ -182,56 +186,40 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Model Training Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Model Training Status</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {trainStatus ? (
-            <>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600">Last Trained</p>
-                  <p className="text-lg font-semibold">
-                    {new Date(trainStatus.last_trained_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Entries Since Training</p>
-                  <p className="text-lg font-semibold">
-                    {trainStatus.rows_used}
-                  </p>
-                </div>
-                <div>
-                  <Badge
-                    variant={canRetrain ? "default" : "secondary"}
-                  >
-                    {canRetrain ? "Ready to Retrain" : "Need More Data"}
-                  </Badge>
-                </div>
-              </div>
-              {trainStatus.trigger_reason && (
-                <p className="text-sm text-slate-500">
-                  Reason: {trainStatus.trigger_reason}
-                </p>
-              )}
-              <Button
-                onClick={handleRetrain}
-                disabled={!canRetrain || retraining}
-                className="w-full"
-              >
-                {retraining
-                  ? "Retraining..."
-                  : canRetrain
-                  ? "Retrain Model"
-                  : "Need 10+ Entries to Retrain"}
-              </Button>
-            </>
-          ) : (
-            <p className="text-slate-500">No training data available</p>
-          )}
-        </CardContent>
-      </Card>
+      {trainStatus && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Model Training Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-slate-600">
+              Last trained:{" "}
+              <span className="font-medium text-slate-900">
+                {new Date(trainStatus.last_trained_at).toLocaleString()}
+              </span>
+            </div>
+
+            <div className="text-sm text-slate-600">
+              New entries since training:{" "}
+              <span className="font-medium text-slate-900">
+                {trainStatus.entries_since_last_train}
+              </span>
+            </div>
+
+            <Badge variant={trainStatus.should_retrain ? "destructive" : "secondary"}>
+              {trainStatus.should_retrain ? "Retrain recommended" : "Model up‑to‑date"}
+            </Badge>
+
+            <Button
+              onClick={handleRetrain}
+              disabled={loading || !trainStatus.should_retrain || retraining}
+              className="w-full"
+            >
+              {retraining ? "Retraining…" : "Retrain Model"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

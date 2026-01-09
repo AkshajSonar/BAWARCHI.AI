@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -13,26 +14,42 @@ import {
 } from "@/components/ui/table"
 import { getAllSurplusEvents } from "@/lib/api1/surplus"
 import { SurplusEvent } from "@/lib/types"
+import { RefreshCw } from "lucide-react"
 
 export default function SurplusPage() {
   const [events, setEvents] = useState<SurplusEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function load() {
-      try {
+  const load = useCallback(async (showRefreshing = false) => {
+    try {
+      if (showRefreshing) {
+        setRefreshing(true)
+      } else {
         setLoading(true)
-        const data = await getAllSurplusEvents()
-        setEvents(data)
-      } catch (err: any) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
       }
+      setError(null)
+      const data = await getAllSurplusEvents()
+      setEvents(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
     }
-    load()
   }, [])
+
+  useEffect(() => {
+    load()
+    
+    // Auto-refresh every 5 seconds
+    const interval = setInterval(() => {
+      load(true)
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [load])
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
@@ -73,11 +90,24 @@ export default function SurplusPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Surplus Events</h1>
-        <p className="text-slate-600">
-          View all leftover food available for redistribution
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Surplus Events</h1>
+          <p className="text-slate-600">
+            View all leftover food available for redistribution
+          </p>
+        </div>
+        <Button
+          onClick={() => load(true)}
+          disabled={refreshing || loading}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw
+            className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
       </div>
 
       <Card>

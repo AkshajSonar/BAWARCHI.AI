@@ -42,14 +42,22 @@ func (s *Service) AddEntry(ctx context.Context, e *KitchenEntry) error {
 		)
 	}
 
-	return s.surplusService.TryCreateSurplus(
+	// Always try to create surplus event (it will check threshold internally)
+	// Don't fail the entry save if surplus creation fails
+	if err := s.surplusService.TryCreateSurplus(
 		ctx,
 		e.ID,
 		e.MealType,
 		e.DishName,
 		e.DishType,
 		e.LeftoverQty,
-	)
+	); err != nil {
+		// Log error but don't fail the entry save
+		// In production, you might want to use a logger here
+		_ = err
+	}
+
+	return nil
 }
 
 

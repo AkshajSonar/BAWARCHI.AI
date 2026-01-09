@@ -9,3 +9,10 @@ type KitchenRow struct {
 	Prepared  float64
 	Leftover  float64
 }
+
+// RedistributionRow represents surplus events that were accepted by NGOs
+type RedistributionRow struct {
+	Day        string
+	QuantityKg float64
+	NgoID      *int64
+}
