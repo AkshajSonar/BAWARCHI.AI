@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from app.train import train_model_from_payload
 from app.predict import predict
 
@@ -19,7 +19,10 @@ async def train(request: Request):
 
 @app.post("/predict")
 def run_prediction(payload: dict):
-    return predict(payload)
+    try:
+        return predict(payload)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/metrics")

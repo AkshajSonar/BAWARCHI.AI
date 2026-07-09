@@ -12,6 +12,8 @@ TRAINING_DATA_PATH = "models/training_data.csv"
 
 
 def load_model():
+    if not os.path.exists(MODEL_PATH) or os.path.getsize(MODEL_PATH) == 0:
+        raise RuntimeError("Model has not been trained yet. Please trigger model retraining.")
     model = xgb.XGBRegressor()
     model.load_model(MODEL_PATH)
     return model
