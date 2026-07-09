@@ -32,6 +32,7 @@ func RegisterRoutes(
 	r.POST("/forecast/dish", forecastHandler.GetDishForecast)
 	r.POST("/forecast/retrain", forecastHandler.RetrainModel)
 	r.GET("/forecast/status", forecastHandler.GetTrainingStatus)
+	r.GET("/forecast/metrics", forecastHandler.GetMLMetrics)
 
 	// NGO routes
 	ngo := r.Group("/ngos")

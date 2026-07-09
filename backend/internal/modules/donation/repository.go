@@ -46,7 +46,7 @@ func (r *Repository) ListPending(ctx context.Context) ([]DonationEvent, error) {
 	}
 	defer rows.Close()
 
-	var results []DonationEvent
+	results := []DonationEvent{}
 
 	for rows.Next() {
 		var d DonationEvent

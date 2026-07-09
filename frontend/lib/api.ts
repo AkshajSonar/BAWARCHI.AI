@@ -1,4 +1,4 @@
-import { ForecastRequest, ForecastResponse } from "@/types/dashboard"
+import { ForecastRequest, ForecastResponse, MLMetrics } from "@/types/dashboard"
 
 const BACKEND_URL = "http://localhost:8080"
 
@@ -27,5 +27,12 @@ export async function getImpactSummary() {
     console.log("Impact summary fetched:", res)
   return res.json()
 }
+
+export async function getMLMetrics(): Promise<MLMetrics> {
+  const res = await fetch(`${BACKEND_URL}/forecast/metrics`)
+  if (!res.ok) throw new Error("Failed to load ML metrics")
+  return res.json()
+}
+
 
 

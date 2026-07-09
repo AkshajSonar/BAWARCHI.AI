@@ -15,4 +15,21 @@ export type ForecastResponse = {
   expected_consumption_kg: number
   recommended_kg: number
   confidence: "high" | "medium" | "low"
+  inference_latency_ms?: number
+  sample_support?: number
+}
+
+export type MetricSummary = {
+  mae: number
+  rmse: number
+  r2: number
+}
+
+export type MLMetrics = {
+  train_metrics: MetricSummary
+  val_metrics: MetricSummary
+  feature_importances: Record<string, number>
+  training_duration_seconds: number
+  total_training_samples: number
+  last_trained_at: string | null
 }

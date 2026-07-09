@@ -18,10 +18,11 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { useEffect, useState } from "react"
-import { getImpactSummary } from "@/lib/api"
+import { getImpactSummary, getMLMetrics } from "@/lib/api"
 import { AnimatedKpi } from "@/components/impact/AnimatedKpi"
 import { WasteTrendChart } from "@/components/impact/WasteTrendChart"
 import { ModelRetrainCard } from "@/components/impact/ModelRetrainCard"
+import { MLMetrics } from "@/types/dashboard"
 
 // ---------- SAMPLE DATA (Replace later with real backend) ----------
 
@@ -51,40 +52,41 @@ const consumptionData = [
 // ---------------------------------------------------------------
 
 export default function ImpactPage() {
- const [data, setData] = useState<any | null>(null)
-const [loading, setLoading] = useState(true)
-const [error, setError] = useState<string | null>(null)
-const [trainStatus, setTrainStatus] = useState(null)
-const [retraining, setRetraining] = useState(false)
+  const [data, setData] = useState<any | null>(null)
+  const [mlMetrics, setMlMetrics] = useState<MLMetrics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [trainStatus, setTrainStatus] = useState(null)
+  const [retraining, setRetraining] = useState(false)
 
-useEffect(() => {
-  fetch("http://localhost:8080/forecast/status")
-    .then((res) => res.json())
-    .then(setTrainStatus)
-}, [])
+  useEffect(() => {
+    fetch("http://localhost:8080/forecast/status")
+      .then((res) => res.json())
+      .then(setTrainStatus)
+  }, [])
 
-async function handleRetrain() {
-  setRetraining(true)
-  await fetch("http://localhost:8080/forecast/retrain", {
-    method: "POST",
-  })
-  window.location.reload()
-}
-
-
-useEffect(() => {
-  getImpactSummary()
-    .then((res) => {
-      setData(res)
+  async function handleRetrain() {
+    setRetraining(true)
+    await fetch("http://localhost:8080/forecast/retrain", {
+      method: "POST",
     })
-    .catch((err) => {
-      console.error(err)
-      setError("Failed to load impact data")
-    })
-    .finally(() => {
-      setLoading(false)
-    })
-}, [])
+    window.location.reload()
+  }
+
+  useEffect(() => {
+    Promise.all([getImpactSummary(), getMLMetrics()])
+      .then(([summaryRes, metricsRes]) => {
+        setData(summaryRes)
+        setMlMetrics(metricsRes)
+      })
+      .catch((err) => {
+        console.error(err)
+        setError("Failed to load impact data")
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
 console.log("Loading:", loading, "Error:", error, "Data:", data);
 if (loading) {
   return (
@@ -195,6 +197,133 @@ if (error || !data) {
           </BarChart>
         </ChartWrapper>
       </ImpactCard>
+
+      {/* ML Model Performance & Evaluation Metrics */}
+      {mlMetrics && (
+        <Card className="border-indigo-100 bg-gradient-to-r from-indigo-50/50 via-white to-indigo-50/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-indigo-900 flex items-center gap-2">
+                🤖 ML Model Performance & Validation
+              </CardTitle>
+              <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white font-mono">
+                XGBoost Regressor
+              </Badge>
+            </div>
+            <p className="text-sm text-slate-600">
+              Evaluated using 5-Fold Cross-Validation to guarantee generalization and prevent overfitting. 
+              Reflects the precision and performance characteristics required for production workloads.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            {/* Grid 1: Side by Side Training vs Cross-Validation Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Training Metrics Card */}
+              <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm space-y-4">
+                <h3 className="text-sm font-semibold text-slate-700 border-b pb-2 flex items-center justify-between">
+                  <span>🎯 Model Fit (Training Data)</span>
+                  <Badge variant="outline" className="text-green-700 bg-green-50 border-green-200">In-Sample</Badge>
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">MAE</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.train_metrics.mae} <span className="text-[10px] text-slate-400">kg</span></p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">RMSE</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.train_metrics.rmse} <span className="text-[10px] text-slate-400">kg</span></p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">R² Score</p>
+                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round(mlMetrics.train_metrics.r2 * 100)}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cross-Validation Metrics Card */}
+              <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm space-y-4">
+                <h3 className="text-sm font-semibold text-slate-700 border-b pb-2 flex items-center justify-between">
+                  <span>📊 Generalization (5-Fold Cross-Val)</span>
+                  <Badge variant="outline" className="text-indigo-700 bg-indigo-50 border-indigo-200">Out-of-Sample</Badge>
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">Avg MAE</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.val_metrics.mae} <span className="text-[10px] text-slate-400">kg</span></p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">Avg RMSE</p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.val_metrics.rmse} <span className="text-[10px] text-slate-400">kg</span></p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase">R² Score</p>
+                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round(mlMetrics.val_metrics.r2 * 100)}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid 2: Feature Importance Visualization */}
+            <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm space-y-4">
+              <h3 className="text-sm font-semibold text-slate-700 border-b pb-2">
+                🔑 Feature Importances (Model Interpretability)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Visualizes which input signals the XGBoost regressor relies on most when predicting consumed food quantities.
+              </p>
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer>
+                  <BarChart
+                    layout="vertical"
+                    data={
+                      Object.entries(mlMetrics.feature_importances)
+                        .map(([feature, importance]) => ({
+                          name: feature
+                            .replace("is_", "")
+                            .replace("_day", "")
+                            .replace("_qty", "")
+                            .replace("_kg", "")
+                            .replace("_", " ")
+                            .toUpperCase(),
+                          importance: Number((importance * 100).toFixed(1)),
+                        }))
+                        .sort((a, b) => b.importance - a.importance)
+                    }
+                    margin={{ left: 60, right: 20, top: 10, bottom: 10 }}
+                  >
+                    <XAxis type="number" unit="%" />
+                    <YAxis type="category" dataKey="name" width={100} style={{ fontSize: 10, fontWeight: 500 }} />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Weight / Importance']} />
+                    <Bar dataKey="importance" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={14} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Grid 3: Training logs & metadata */}
+            <div className="pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-600 text-xs">
+              <div>
+                <p className="font-semibold text-slate-400">Dataset Size</p>
+                <p className="text-sm font-bold text-slate-700">{mlMetrics.total_training_samples} records</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-400">Total Fit Latency</p>
+                <p className="text-sm font-bold text-slate-700">{Math.round(mlMetrics.training_duration_seconds * 1000)} ms</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-400">Validation Split</p>
+                <p className="text-sm font-bold text-slate-700">80/20 (K-Fold)</p>
+              </div>
+              <div>
+                <p className="font-semibold text-slate-400">Last Training Session</p>
+                <p className="text-sm font-bold text-slate-700 truncate" title={mlMetrics.last_trained_at || "N/A"}>
+                  {mlMetrics.last_trained_at}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       
       {trainStatus && (
   <ModelRetrainCard

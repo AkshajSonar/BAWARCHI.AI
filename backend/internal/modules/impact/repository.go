@@ -25,7 +25,7 @@ func (r *Repository) FetchImpactData(ctx context.Context) ([]KitchenRow, error) 
 	}
 	defer rows.Close()
 
-	var result []KitchenRow
+	result := []KitchenRow{}
 
 	for rows.Next() {
 		var r KitchenRow
@@ -56,7 +56,7 @@ func (r *Repository) FetchRedistributionData(ctx context.Context) ([]Redistribut
 	}
 	defer rows.Close()
 
-	var result []RedistributionRow
+	result := []RedistributionRow{}
 	for rows.Next() {
 		var row RedistributionRow
 		err := rows.Scan(&row.Day, &row.QuantityKg, &row.NgoID)

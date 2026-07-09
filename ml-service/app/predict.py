@@ -24,6 +24,9 @@ def load_training_data():
 
 
 def predict(input_data: dict):
+    import time
+    start_time = time.time()
+    
     REQUIRED = [
         "day_of_week",
         "meal_type",
@@ -89,10 +92,12 @@ def predict(input_data: dict):
         expected = ml_pred
 
     recommended = expected * risk_multiplier
+    latency_ms = (time.time() - start_time) * 1000
 
     return {
         "expected_consumption_kg": round(expected, 2),
         "recommended_kg": round(recommended, 2),
         "confidence": confidence,
         "sample_support": sample_support,
+        "inference_latency_ms": round(latency_ms, 2)
     }

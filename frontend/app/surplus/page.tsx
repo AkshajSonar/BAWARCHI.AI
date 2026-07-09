@@ -31,7 +31,7 @@ export default function SurplusPage() {
       }
       setError(null)
       const data = await getAllSurplusEvents()
-      setEvents(data)
+      setEvents(data || [])
     } catch (err: any) {
       setError(err.message)
     } finally {

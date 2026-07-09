@@ -46,7 +46,7 @@ func (r *Repository) ListAvailable(ctx context.Context) ([]SurplusEvent, error) 
 	}
 	defer rows.Close()
 
-	var result []SurplusEvent
+	result := []SurplusEvent{}
 	for rows.Next() {
 		var e SurplusEvent
 		err := rows.Scan(
@@ -103,7 +103,7 @@ func (r *Repository) GetAll(ctx context.Context) ([]SurplusEvent, error) {
 	}
 	defer rows.Close()
 
-	var result []SurplusEvent
+	result := []SurplusEvent{}
 	for rows.Next() {
 		var e SurplusEvent
 		err := rows.Scan(

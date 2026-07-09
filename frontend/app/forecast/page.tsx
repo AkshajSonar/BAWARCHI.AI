@@ -196,6 +196,13 @@ export default function ForecastPage() {
               <ConfidenceBadge level={result.confidence} />
             </div>
 
+            {result.inference_latency_ms !== undefined && (
+              <div className="pt-2 border-t text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                <span>⚡ <strong>Inference Latency:</strong> {result.inference_latency_ms} ms</span>
+                <span>📊 <strong>Sample Support:</strong> {result.sample_support || 0} similar entries</span>
+              </div>
+            )}
+
             <p className="text-sm text-slate-600">
               Prediction based on historical consumption patterns under similar
               conditions.

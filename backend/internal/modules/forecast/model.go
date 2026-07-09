@@ -17,4 +17,6 @@ type ForecastResponse struct {
 	ExpectedConsumptionKg float64 `json:"expected_consumption_kg"`
 	RecommendedKg         float64 `json:"recommended_kg"`
 	Confidence            string  `json:"confidence"`
+	InferenceLatencyMs    float64 `json:"inference_latency_ms"`
+	SampleSupport         int     `json:"sample_support"`
 }

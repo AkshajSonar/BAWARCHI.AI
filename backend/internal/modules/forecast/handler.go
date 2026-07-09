@@ -99,3 +99,13 @@ func (h *Handler) GetTrainingStatus(c *gin.Context) {
 		"should_retrain":           shouldRetrain,
 	})
 }
+
+func (h *Handler) GetMLMetrics(c *gin.Context) {
+	metrics, err := h.service.GetMetrics()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, metrics)
+}
+

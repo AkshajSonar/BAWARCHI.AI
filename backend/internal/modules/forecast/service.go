@@ -68,3 +68,37 @@ func (s *Service) Retrain(data []map[string]interface{}) error {
 	return nil
 }
 
+type MetricSummary struct {
+	MAE  float64 `json:"mae"`
+	RMSE float64 `json:"rmse"`
+	R2   float64 `json:"r2"`
+}
+
+type MLMetrics struct {
+	TrainMetrics            MetricSummary      `json:"train_metrics"`
+	ValMetrics              MetricSummary      `json:"val_metrics"`
+	FeatureImportances      map[string]float64 `json:"feature_importances"`
+	TrainingDurationSeconds float64            `json:"training_duration_seconds"`
+	TotalTrainingSamples    int                `json:"total_training_samples"`
+	LastTrainedAt           string             `json:"last_trained_at"`
+}
+
+func (s *Service) GetMetrics() (*MLMetrics, error) {
+	resp, err := http.Get(s.mlURL + "/metrics")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("ML metrics service error status: %d", resp.StatusCode)
+	}
+
+	var metrics MLMetrics
+	if err := json.NewDecoder(resp.Body).Decode(&metrics); err != nil {
+		return nil, err
+	}
+	return &metrics, nil
+}
+
+

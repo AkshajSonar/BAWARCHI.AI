@@ -125,7 +125,7 @@ func (s *Service) GetSummary(ctx context.Context) (*ImpactSummary, error) {
 		})
 	}
 
-	foodSaved := totalConsumed * 0.15
+	foodSaved := (totalConsumed * 0.15) + totalRedistributed
 	mealsSaved := int(foodSaved / 0.25)
 
 	return &ImpactSummary{
