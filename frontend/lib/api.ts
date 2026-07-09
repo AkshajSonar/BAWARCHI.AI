@@ -1,6 +1,6 @@
 import { ForecastRequest, ForecastResponse, MLMetrics } from "@/types/dashboard"
 
-const BACKEND_URL = "http://localhost:8080"
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 
 export async function getDishForecast(
   payload: ForecastRequest
@@ -22,7 +22,7 @@ export async function getDishForecast(
 }
 
 export async function getImpactSummary() {
-  const res = await fetch("http://localhost:8080/impact/summary")
+  const res = await fetch(`${BACKEND_URL}/impact/summary`)
   if (!res.ok) throw new Error("Failed to load impact data")
     console.log("Impact summary fetched:", res)
   return res.json()

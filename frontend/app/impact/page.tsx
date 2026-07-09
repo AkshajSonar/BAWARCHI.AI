@@ -51,6 +51,8 @@ const consumptionData = [
 
 // ---------------------------------------------------------------
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+
 export default function ImpactPage() {
   const [data, setData] = useState<any | null>(null)
   const [mlMetrics, setMlMetrics] = useState<MLMetrics | null>(null)
@@ -60,14 +62,14 @@ export default function ImpactPage() {
   const [retraining, setRetraining] = useState(false)
 
   useEffect(() => {
-    fetch("http://localhost:8080/forecast/status")
+    fetch(`${API_BASE}/forecast/status`)
       .then((res) => res.json())
       .then(setTrainStatus)
   }, [])
 
   async function handleRetrain() {
     setRetraining(true)
-    await fetch("http://localhost:8080/forecast/retrain", {
+    await fetch(`${API_BASE}/forecast/retrain`, {
       method: "POST",
     })
     window.location.reload()

@@ -14,25 +14,27 @@ import {
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+
 export default function EntryPage() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-const [form, setForm] = useState({
-  meal_type: "lunch",
-  dish_name: "",
-  dish_type: "veg",
-  total_students: 1200,
-  prepared_qty: "",
-  leftover_qty: "",
+  const [form, setForm] = useState({
+    meal_type: "lunch",
+    dish_name: "",
+    dish_type: "veg",
+    total_students: 1200,
+    prepared_qty: "",
+    leftover_qty: "",
 
-  is_special: 0,
-  is_exam_day: 0,
-  is_holiday: 0,
-  is_break: 0,
-  is_event_day: 0,
-})
+    is_special: 0,
+    is_exam_day: 0,
+    is_holiday: 0,
+    is_break: 0,
+    is_event_day: 0,
+  })
 
   async function handleSubmit() {
     setError(null)
@@ -40,7 +42,7 @@ const [form, setForm] = useState({
     setLoading(true)
 
     try {
-      const res = await fetch("http://localhost:8080/kitchen/entry", {
+      const res = await fetch(`${API_BASE}/kitchen/entry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
