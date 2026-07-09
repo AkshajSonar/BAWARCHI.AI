@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label"
 import { getDishForecast } from "@/lib/api"
 import { ConfidenceBadge } from "@/components/dashboard/confidence-badge"
 import { ForecastResponse } from "@/types/dashboard"
+import { Leaf } from "lucide-react"
 
 export default function ForecastPage() {
   const [loading, setLoading] = useState(false)
