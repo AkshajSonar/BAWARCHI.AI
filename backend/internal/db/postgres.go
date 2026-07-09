@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,6 +12,15 @@ import (
 func NewPostgresPool(dbURL string) *pgxpool.Pool {
 	var pool *pgxpool.Pool
 	var err error
+
+	// Automatically append simple protocol query param for PgBouncer compatibility (Supabase transaction pooler)
+	if !strings.Contains(dbURL, "default_query_exec_mode") {
+		if strings.Contains(dbURL, "?") {
+			dbURL += "&default_query_exec_mode=simple_protocol"
+		} else {
+			dbURL += "?default_query_exec_mode=simple_protocol"
+		}
+	}
 
 	maxRetries := 10
 	retryDelay := 3 * time.Second
