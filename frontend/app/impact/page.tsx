@@ -229,15 +229,15 @@ if (error || !data) {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">MAE</p>
-                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.train_metrics.mae} <span className="text-[10px] text-slate-400">kg</span></p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{(mlMetrics?.train_metrics?.mae ?? 0).toFixed(2)} <span className="text-[10px] text-slate-400">kg</span></p>
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">RMSE</p>
-                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.train_metrics.rmse} <span className="text-[10px] text-slate-400">kg</span></p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{(mlMetrics?.train_metrics?.rmse ?? 0).toFixed(2)} <span className="text-[10px] text-slate-400">kg</span></p>
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">R² Score</p>
-                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round(mlMetrics.train_metrics.r2 * 100)}%</p>
+                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round((mlMetrics?.train_metrics?.r2 ?? 0) * 100)}%</p>
                   </div>
                 </div>
               </div>
@@ -251,15 +251,15 @@ if (error || !data) {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">Avg MAE</p>
-                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.val_metrics.mae} <span className="text-[10px] text-slate-400">kg</span></p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{(mlMetrics?.val_metrics?.mae ?? 0).toFixed(2)} <span className="text-[10px] text-slate-400">kg</span></p>
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">Avg RMSE</p>
-                    <p className="text-xl font-bold font-mono text-slate-800">{mlMetrics.val_metrics.rmse} <span className="text-[10px] text-slate-400">kg</span></p>
+                    <p className="text-xl font-bold font-mono text-slate-800">{(mlMetrics?.val_metrics?.rmse ?? 0).toFixed(2)} <span className="text-[10px] text-slate-400">kg</span></p>
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-slate-400 uppercase">R² Score</p>
-                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round(mlMetrics.val_metrics.r2 * 100)}%</p>
+                    <p className="text-xl font-bold font-mono text-indigo-600">{Math.round((mlMetrics?.val_metrics?.r2 ?? 0) * 100)}%</p>
                   </div>
                 </div>
               </div>
@@ -278,7 +278,7 @@ if (error || !data) {
                   <BarChart
                     layout="vertical"
                     data={
-                      Object.entries(mlMetrics.feature_importances)
+                      Object.entries(mlMetrics?.feature_importances || {})
                         .map(([feature, importance]) => ({
                           name: feature
                             .replace("is_", "")
@@ -306,11 +306,11 @@ if (error || !data) {
             <div className="pt-4 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-slate-600 text-xs">
               <div>
                 <p className="font-semibold text-slate-400">Dataset Size</p>
-                <p className="text-sm font-bold text-slate-700">{mlMetrics.total_training_samples} records</p>
+                <p className="text-sm font-bold text-slate-700">{mlMetrics?.total_training_samples ?? 0} records</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-400">Total Fit Latency</p>
-                <p className="text-sm font-bold text-slate-700">{Math.round(mlMetrics.training_duration_seconds * 1000)} ms</p>
+                <p className="text-sm font-bold text-slate-700">{Math.round((mlMetrics?.training_duration_seconds ?? 0) * 1000)} ms</p>
               </div>
               <div>
                 <p className="font-semibold text-slate-400">Validation Split</p>
@@ -318,8 +318,8 @@ if (error || !data) {
               </div>
               <div>
                 <p className="font-semibold text-slate-400">Last Training Session</p>
-                <p className="text-sm font-bold text-slate-700 truncate" title={mlMetrics.last_trained_at || "N/A"}>
-                  {mlMetrics.last_trained_at}
+                <p className="text-sm font-bold text-slate-700 truncate" title={mlMetrics?.last_trained_at || "N/A"}>
+                  {mlMetrics?.last_trained_at || "N/A"}
                 </p>
               </div>
             </div>
