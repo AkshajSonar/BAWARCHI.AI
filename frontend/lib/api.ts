@@ -22,14 +22,18 @@ export async function getDishForecast(
 }
 
 export async function getImpactSummary() {
-  const res = await fetch(`${BACKEND_URL}/impact/summary`)
+  const res = await fetch(`${BACKEND_URL}/impact/summary`, {
+    cache: "no-store",
+  })
   if (!res.ok) throw new Error("Failed to load impact data")
     console.log("Impact summary fetched:", res)
   return res.json()
 }
 
 export async function getMLMetrics(): Promise<MLMetrics> {
-  const res = await fetch(`${BACKEND_URL}/forecast/metrics`)
+  const res = await fetch(`${BACKEND_URL}/forecast/metrics`, {
+    cache: "no-store",
+  })
   if (!res.ok) throw new Error("Failed to load ML metrics")
   return res.json()
 }
