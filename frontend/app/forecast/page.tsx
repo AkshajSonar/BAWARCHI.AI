@@ -178,34 +178,43 @@ export default function ForecastPage() {
       {error && <p className="text-red-600">{error}</p>}
 
       {result && (
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Recommendation</CardTitle>
+        <Card className="border-emerald-100 bg-gradient-to-r from-emerald-50/50 via-white to-emerald-50/20 shadow-sm overflow-hidden relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
+          <CardHeader className="pb-3">
+            <CardTitle className="text-slate-800 flex items-center gap-2">
+              <Leaf className="h-5 w-5 text-emerald-500 fill-emerald-500/10" />
+              AI Recommendation
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p>
-              <strong>Expected Consumption:</strong>{" "}
-              {result.expected_consumption_kg} kg
-            </p>
-            <p>
-              <strong>Recommended Cooking:</strong>{" "}
-              {result.recommended_kg} kg
-            </p>
-            <div className="flex items-center gap-2">
-              <strong>Confidence:</strong>
-              <ConfidenceBadge level={result.confidence} />
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white border border-slate-100 p-4 rounded-xl shadow-xs">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Expected Consumption</p>
+                <p className="text-2xl font-bold font-mono text-amber-700 mt-1">{result.expected_consumption_kg} <span className="text-sm font-semibold">kg</span></p>
+              </div>
+
+              <div className="bg-white border border-slate-100 p-4 rounded-xl shadow-xs">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Recommended Cooking</p>
+                <p className="text-2xl font-bold font-mono text-emerald-700 mt-1">{result.recommended_kg} <span className="text-sm font-semibold">kg</span></p>
+              </div>
+
+              <div className="bg-white border border-slate-100 p-4 rounded-xl shadow-xs flex flex-col justify-between">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Confidence Level</p>
+                <div className="mt-2">
+                  <ConfidenceBadge level={result.confidence} />
+                </div>
+              </div>
             </div>
 
             {result.inference_latency_ms !== undefined && (
-              <div className="pt-2 border-t text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-                <span>⚡ <strong>Inference Latency:</strong> {result.inference_latency_ms} ms</span>
-                <span>📊 <strong>Sample Support:</strong> {result.sample_support || 0} similar entries</span>
+              <div className="pt-3 border-t border-slate-100 text-xs text-slate-500 flex flex-wrap gap-x-6 gap-y-1.5 font-mono">
+                <span className="flex items-center gap-1">⚡ <strong>Latency:</strong> {result.inference_latency_ms} ms</span>
+                <span className="flex items-center gap-1">📊 <strong>Dataset Support:</strong> {result.sample_support || 0} matching canteens</span>
               </div>
             )}
 
-            <p className="text-sm text-slate-600">
-              Prediction based on historical consumption patterns under similar
-              conditions.
+            <p className="text-xs text-slate-500 leading-relaxed italic border-l-2 border-emerald-500 pl-3">
+              This recommendation incorporates active safety multipliers tailored to demand variability to prevent kitchen shortages.
             </p>
           </CardContent>
         </Card>
