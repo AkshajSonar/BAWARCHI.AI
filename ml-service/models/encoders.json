@@ -1,0 +1,1 @@
+{"meal_type": {"lunch": 0, "dinner": 1}, "dish_type": {"veg": 0, "non-veg": 1, "nonveg": 2}, "dish_name": {"Rice": 0, "Dal": 1, "Pasta": 2, "Biryani": 3, "Chicken Curry": 4}}

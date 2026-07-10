@@ -1,0 +1,27 @@
+{
+  "train_metrics": {
+    "mae": 1.1656,
+    "rmse": 1.5326,
+    "r2": 0.9992
+  },
+  "val_metrics": {
+    "mae": 5.6208,
+    "rmse": 7.4316,
+    "r2": 0.9801
+  },
+  "feature_importances": {
+    "day_of_week": 0.0071,
+    "meal_type": 0.0,
+    "dish_name": 0.321,
+    "dish_type": 0.4662,
+    "is_special": 0.0,
+    "is_exam_day": 0.0307,
+    "is_holiday": 0.0,
+    "is_break": 0.0,
+    "is_event_day": 0.0611,
+    "total_students": 0.114
+  },
+  "training_duration_seconds": 0.7231,
+  "total_training_samples": 240,
+  "last_trained_at": "2026-07-10 06:23:05"
+}

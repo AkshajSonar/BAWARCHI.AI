@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 
@@ -26,11 +27,13 @@ func NewService(mlURL string, trainingRepo *TrainingRepo) *Service {
 func (s *Service) Predict(req ForecastRequest) (*ForecastResponse, error) {
 	body, _ := json.Marshal(req)
 
-	resp, err := http.Post(
-		s.mlURL+"/predict",
-		"application/json",
-		bytes.NewBuffer(body),
-	)
+	resp, err := performRequestWithRetry(func() (*http.Response, error) {
+		return http.Post(
+			s.mlURL+"/predict",
+			"application/json",
+			bytes.NewBuffer(body),
+		)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +87,9 @@ type MLMetrics struct {
 }
 
 func (s *Service) GetMetrics() (*MLMetrics, error) {
-	resp, err := http.Get(s.mlURL + "/metrics")
+	resp, err := performRequestWithRetry(func() (*http.Response, error) {
+		return http.Get(s.mlURL + "/metrics")
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +104,46 @@ func (s *Service) GetMetrics() (*MLMetrics, error) {
 		return nil, err
 	}
 	return &metrics, nil
+}
+
+func performRequestWithRetry(reqFunc func() (*http.Response, error)) (*http.Response, error) {
+	maxRetries := 5
+	backoff := 2 * time.Second
+
+	var lastResp *http.Response
+	var lastErr error
+
+	for i := 0; i < maxRetries; i++ {
+		resp, err := reqFunc()
+		if err != nil {
+			lastErr = err
+			time.Sleep(backoff)
+			backoff *= 2
+			continue
+		}
+
+		if resp.StatusCode == http.StatusOK {
+			return resp, nil
+		}
+
+		if resp.StatusCode == http.StatusTooManyRequests ||
+			resp.StatusCode == http.StatusBadGateway ||
+			resp.StatusCode == http.StatusServiceUnavailable ||
+			resp.StatusCode == http.StatusGatewayTimeout {
+			resp.Body.Close()
+			lastErr = fmt.Errorf("transient error status: %d", resp.StatusCode)
+			time.Sleep(backoff)
+			backoff *= 2
+			continue
+		}
+
+		return resp, nil
+	}
+
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	return lastResp, fmt.Errorf("request failed after %d retries", maxRetries)
 }
 
 
